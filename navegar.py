@@ -1,28 +1,26 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
-# URLs das 5 páginas fornecidas
-urls_iniciais = [
-    "https://luna0812y.github.io/Buscador/paginas/blade_runner.html",
-    "https://luna0812y.github.io/Buscador/paginas/duna.html",
-    "https://luna0812y.github.io/Buscador/paginas/matrix.html",
-    "https://luna0812y.github.io/Buscador/paginas/interestelar.html",
-    "https://luna0812y.github.io/Buscador/paginas/mochileiro.html"
-]
+url_inicial = "https://luna0812y.github.io/Buscador/paginas/matrix.html"
 
-# Estruturas de dados globais
 visitadas = set()
 dados_paginas = {}
 
-# Função para rodar o crawler
-def crawler(url_inicial):
-    fila = [url_inicial]  # Inicia a fila com a URL inicial
+def mesmo_dominio(url_base, url_destino):
+    """Garante que o link é interno (do mesmo domínio base)."""
+    base = urlparse(url_base)
+    destino = urlparse(url_destino)
+    return base.netloc == destino.netloc
+
+# Função para visitar páginas dinamicamente
+def crawler(url_raiz):
+    fila = [url_raiz]
 
     while fila:
-        url = fila.pop(0)  # Pega a primeira URL da fila
+        url = fila.pop(0)
         if url in visitadas:
-            continue  # Se já foi visitada, pula para a próxima
+            continue
 
         try:
             resposta = requests.get(url)
@@ -33,29 +31,27 @@ def crawler(url_inicial):
             print(f"[!] Erro ao acessar {url}: {e}")
             continue
 
-        # Processa o conteúdo da página
         soup = BeautifulSoup(resposta.text, 'html.parser')
-        texto = soup.get_text().lower()  # Pega o texto da página
-        links = [urljoin(url, a['href']) for a in soup.find_all('a', href=True)]  # Extrai links
+        texto = soup.get_text().lower()
+        links = []
 
-        # Armazena os dados da página
+        for a in soup.find_all('a', href=True):
+            link_completo = urljoin(url, a['href'])
+            if mesmo_dominio(url, link_completo):
+                links.append(link_completo)
+                if link_completo not in visitadas and link_completo not in fila:
+                    fila.append(link_completo)
+
         dados_paginas[url] = {
             'texto': texto,
             'links': links
         }
 
-        visitadas.add(url)  # Marca a URL como visitada
+        visitadas.add(url)
+        print(f"[✔] Visitado: {url}")
 
-        # Adiciona os links à fila para processamento
-        for link in links:
-            if link not in visitadas:
-                fila.append(link)
+crawler(url_inicial)
 
-# Inicia o crawler para cada página fornecida
-for url in urls_iniciais:
-    crawler(url)
-
-# Função para mapear as páginas que apontam para cada uma
 def computar_autoridade():
     for origem, dados in dados_paginas.items():
         for destino in dados['links']:
@@ -64,12 +60,4 @@ def computar_autoridade():
                     dados_paginas[destino]['recebe_de'] = set()
                 dados_paginas[destino]['recebe_de'].add(origem)
 
-# Mapeia a autoridade das páginas
 computar_autoridade()
-
-# Exibe os dados das páginas para verificação
-for url, dados in dados_paginas.items():
-    print(f"\nPágina: {url}")
-    print(f"Texto: {dados['texto'][:200]}...")  # Exibe os primeiros 200 caracteres do texto
-    print(f"Links: {dados['links']}")
-    print(f"Recebe de: {dados.get('recebe_de', 'Nenhum link apontando para ela')}")
