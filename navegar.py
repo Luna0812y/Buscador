@@ -7,11 +7,23 @@ url_inicial = "https://luna0812y.github.io/Buscador/paginas/matrix.html"
 visitadas = set()
 dados_paginas = {}
 
-def mesmo_dominio(url_base, url_destino):
-    """Garante que o link é interno (do mesmo domínio base)."""
-    base = urlparse(url_base)
-    destino = urlparse(url_destino)
-    return base.netloc == destino.netloc
+# Função para ler também os arquivo do head de index.html
+def extrair_metadados(soup):
+    """Extrai os conteúdos dos atributos 'content' das tags <meta>."""
+    metadados = []
+    for meta in soup.find_all('meta'):
+        content = meta.get('content')
+        if content:
+            metadados.append(content.lower())
+    return " ".join(metadados)
+
+def mesmo_dominio(url1, url2):
+    """
+    Verifica se duas URLs pertencem ao mesmo domínio.
+    """
+    dominio1 = urlparse(url1).netloc
+    dominio2 = urlparse(url2).netloc
+    return dominio1 == dominio2
 
 # Função para visitar páginas dinamicamente
 def crawler(url_raiz):
@@ -32,9 +44,12 @@ def crawler(url_raiz):
             continue
 
         soup = BeautifulSoup(resposta.text, 'html.parser')
-        texto = soup.get_text().lower()
-        links = []
+        meta_text = extrair_metadados(soup)
+        title = soup.title.string.lower() if soup.title and soup.title.string else ''
+        body_text = soup.body.get_text(separator=' ', strip=True).lower() if soup.body else ''
+        texto = title + " " + meta_text + " " + body_text
 
+        links = []
         for a in soup.find_all('a', href=True):
             link_completo = urljoin(url, a['href'])
             if mesmo_dominio(url, link_completo):
