@@ -1,5 +1,6 @@
 import re
 import navegar
+from tabulate import tabulate
 
 # Função para buscar o termo na página e contar a frequência
 def contar_ocorrencias(termo, texto):
@@ -48,19 +49,23 @@ def ranquear_paginas(termo):
 
 # Função para exibir o ranking de forma amigável
 def exibir_ranking(pontuacoes):
-    print("Ranking das páginas:")
-    print("{:<30} {:<10} {:<10} {:<10} {:<10} {:<10}".format(
-        "Página", "Termos", "Links", "Autorreferência", "Pontuação", "Total"))
-    
+    headers = ["Página", "Termos", "Links", "Autorreferência", "Pontuação", "Total"]
+    tabela = []
+
     for pontuacao in pontuacoes:
-        print("{:<30} {:<10} {:<10} {:<10} {:<10} {:<10}".format(
+        linha = [
             pontuacao['url'],
             pontuacao['termos_pontos'],
             pontuacao['links_pontos'],
             pontuacao['autoreferente_pontos'],
             pontuacao['pontuacao_total'],
-            pontuacao['pontuacao_total']
-        ))
+            pontuacao['pontuacao_total']  # Repetido como no seu exemplo
+        ]
+        tabela.append(linha)
+
+    print("\nRanking das páginas:\n")
+    print(tabulate(tabela, headers=headers, tablefmt="grid"))
+
 
 # Exemplo de busca por "Matrix"
 termo_busca = "Matrix"

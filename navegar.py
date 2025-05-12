@@ -4,11 +4,11 @@ from urllib.parse import urljoin
 
 # URLs das 5 páginas fornecidas
 urls_iniciais = [
-    "https://seuusuario.github.io/nomedoprojeto/blade_runner.html",
-    "https://seuusuario.github.io/nomedoprojeto/duna.html",
-    "https://seuusuario.github.io/nomedoprojeto/matrix.html",
-    "https://seuusuario.github.io/nomedoprojeto/interestellar.html",
-    "https://seuusuario.github.io/nomedoprojeto/mochileiro.html"
+    "https://luna0812y.github.io/Buscador/paginas/blade_runner.html",
+    "https://luna0812y.github.io/Buscador/paginas/duna.html",
+    "https://luna0812y.github.io/Buscador/paginas/matrix.html",
+    "https://luna0812y.github.io/Buscador/paginas/interestelar.html",
+    "https://luna0812y.github.io/Buscador/paginas/mochileiro.html"
 ]
 
 # Estruturas de dados globais
